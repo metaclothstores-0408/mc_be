@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: metacloth-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: metacloth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: [metacloth_pgdata:/var/lib/postgresql/data]
+volumes:
+  metacloth_pgdata:

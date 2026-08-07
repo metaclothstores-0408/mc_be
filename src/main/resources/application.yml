@@ -1,0 +1,28 @@
+spring:
+  application.name: metacloth-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/metacloth}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:admin123}
+  jpa:
+    open-in-view: false
+    hibernate.ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql:true
+      jdbc.time_zone: UTC
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+server.port: ${SERVER_PORT:8080}
+management.endpoints.web.exposure.include: health,info
+
+metacloth:
+  cors.allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  security.jwt.secret: ${JWT_SECRET:change-this-development-secret-to-a-minimum-32-byte-value}
+  security.jwt.expiration-minutes: ${JWT_EXPIRATION_MINUTES:1440}
+  google.client-id: ${GOOGLE_CLIENT_ID:}
+  otp.length: ${OTP_LENGTH:6}
+  otp.expiry-minutes: ${OTP_EXPIRY_MINUTES:5}
+  otp.resend-cooldown-seconds: ${OTP_RESEND_COOLDOWN_SECONDS:60}
+  otp.max-attempts: ${OTP_MAX_ATTEMPTS:5}
