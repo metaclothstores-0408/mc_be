@@ -41,7 +41,12 @@ public class Product {
     OffsetDateTime createdAt;
     @Column(name = "updated_at")
     OffsetDateTime updatedAt;
-    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+    @OneToMany(
+            mappedBy = "product",
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @Builder.Default
     List<ProductVariant> variants = new ArrayList<>();
 }
