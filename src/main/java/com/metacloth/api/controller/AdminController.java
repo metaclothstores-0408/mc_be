@@ -9,6 +9,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import com.metacloth.api.dto.AdminDtos.AdminUserResponse;
+import com.metacloth.domain.entity.User;
+import com.metacloth.domain.enums.UserRole;
+import com.metacloth.exception.ApiException;
+import com.metacloth.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +28,7 @@ public class AdminController {
     private final OrderService orders;
     private final OrderRepository repo;
     private final ProductReviewService reviewService;
+    private final UserRepository users;
 
     @GetMapping("/orders")
     List<OrderResponse> orders() {
@@ -44,5 +52,59 @@ public class AdminController {
             @PathVariable Long reviewId
     ) {
         reviewService.adminDeactivate(reviewId);
+    }
+
+    @GetMapping("/users")
+    public List<AdminUserResponse> users() {
+
+        return users
+                .findAllByRoleOrderByCreatedAtDesc(UserRole.CUSTOMER)
+                .stream()
+                .map(this::toAdminUser)
+                .toList();
+    }
+
+    @DeleteMapping("/users/{id}")
+    public void deleteUser(@PathVariable Long id) {
+
+        User user = users.findById(id)
+                .orElseThrow(() ->
+                        new ApiException(
+                                HttpStatus.NOT_FOUND,
+                                "User not found."
+                        )
+                );
+
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new ApiException(
+                    HttpStatus.FORBIDDEN,
+                    "Admin users cannot be deleted."
+            );
+        }
+
+        if (repo.existsById(id)) {
+            throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    "This user has orders and cannot be deleted. Delete or archive the orders first."
+            );
+        }
+
+        users.delete(user);
+    }
+
+    private AdminUserResponse toAdminUser(User user) {
+
+        return new AdminUserResponse(
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getAuthProvider() == null
+                        ? null
+                        : user.getAuthProvider().name(),
+                user.isEnabled(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 }

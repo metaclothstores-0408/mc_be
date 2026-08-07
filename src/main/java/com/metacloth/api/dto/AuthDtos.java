@@ -12,6 +12,20 @@ public final class AuthDtos {
                                 @Size(min = 8, max = 100) String password) {
     }
 
+    public record UpdateProfileRequest(
+            @NotBlank
+            @Size(max = 100)
+            String fullName,
+
+            @NotBlank
+            @Pattern(
+                    regexp = "^[0-9]{10}$",
+                    message = "Phone number must contain exactly 10 digits"
+            )
+            String phoneNumber
+    ) {
+    }
+
     public record SigninRequest(@Email @NotBlank String email, @NotBlank String password) {
     }
 

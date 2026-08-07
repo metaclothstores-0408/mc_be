@@ -1,6 +1,7 @@
 package com.metacloth.service;
 
 import com.metacloth.api.dto.AuthDtos.UserResponse;
+import com.metacloth.api.dto.AuthDtos.UpdateProfileRequest;
 import com.metacloth.domain.entity.User;
 import com.metacloth.domain.enums.AuthProvider;
 import com.metacloth.domain.enums.UserRole;
@@ -23,6 +24,41 @@ public class UserService {
         if (repo.existsByEmailIgnoreCase(email))
             throw new ApiException(HttpStatus.CONFLICT, "Email is already registered.");
         return repo.save(User.builder().fullName(name).email(email.toLowerCase().trim()).passwordHash(encoder.encode(password)).authProvider(AuthProvider.PHONE).role(UserRole.CUSTOMER).enabled(true).build());
+    }
+
+    @Transactional
+    public User updateProfile(Long userId, UpdateProfileRequest request) {
+
+        User user = customer(userId);
+
+        String fullName = request.fullName().trim();
+        String phoneNumber = request.phoneNumber().trim();
+
+        if (fullName.isBlank()) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Full name is required."
+            );
+        }
+
+        if (!phoneNumber.matches("^[0-9]{10}$")) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Phone number must contain exactly 10 digits."
+            );
+        }
+
+        if (repo.existsByPhoneNumberAndIdNot(phoneNumber, userId)) {
+            throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    "Phone number is already registered."
+            );
+        }
+
+        user.setFullName(fullName);
+        user.setPhoneNumber(phoneNumber);
+
+        return repo.save(user);
     }
 
     @Transactional
