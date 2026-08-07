@@ -45,7 +45,13 @@ public class AuthService {
     @Transactional
     public AuthResponse google(String idToken) {
         var identity = google.verify(idToken);
-        return token(users.googleUser(identity.email(), identity.name()));
+
+        return token(
+                users.googleUser(
+                        identity.email(),
+                        identity.name()
+                )
+        );
     }
 
     private AuthResponse token(User u) {
