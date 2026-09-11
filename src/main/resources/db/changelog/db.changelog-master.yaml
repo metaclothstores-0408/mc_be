@@ -7,3 +7,9 @@ databaseChangeLog:
       file: db/changelog/003-product-reviews.sql
   - include:
       file: db/changelog/004-google-oauth.sql
+  - include:
+      file: db/changelog/005-dtf-assets.sql
+  - include:
+      file: db/changelog/006-dtf-print-scale.sql
+  - include:
+      file: db/changelog/007-dtf-sheet-sizing.sql

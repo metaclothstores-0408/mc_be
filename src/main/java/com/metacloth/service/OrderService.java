@@ -10,6 +10,7 @@ import com.metacloth.exception.ApiException;
 import com.metacloth.repository.AvatarRepository;
 import com.metacloth.repository.OrderRepository;
 import com.metacloth.repository.ProductVariantRepository;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -27,6 +29,7 @@ public class OrderService {
     private final UserService users;
     private final ProductVariantRepository variants;
     private final AvatarRepository avatars;
+    private final DtfProductionService dtfProductionService;
 
     @Transactional
     public OrderResponse create(Long uid, CreateOrderRequest r) {
@@ -47,7 +50,14 @@ public class OrderService {
             total = total.add(expected.multiply(BigDecimal.valueOf(i.quantity())));
         }
         o.setTotalAmount(total);
-        return dto(orders.save(o));
+        Order saved = orders.save(o);
+        // --- Isolated async DTF production pipeline (non-blocking) ---
+        try {
+            dtfProductionService.processOrderAsync(saved.getId(), saved.getItems());
+        } catch (Exception e) {
+            log.warn("DTF trigger failed for order {}: {}", saved.getId(), e.getMessage());
+        }
+        return dto(saved);
     }
 
     public com.metacloth.api.dto.OrderDtos.TrackResponse track(Long uid, Long id) {

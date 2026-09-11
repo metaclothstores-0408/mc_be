@@ -7,7 +7,8 @@ public record AppProperties(
         Security security,
         Cors cors,
         Otp otp,
-        Google google
+        Google google,
+        Dtf dtf
 ) {
 
     public record Security(Jwt jwt) {
@@ -33,6 +34,12 @@ public record AppProperties(
             String frontendCallbackUrl,
             String scopes,
             String tokenEncryptionKey
+    ) {
+    }
+
+    public record Dtf(
+            String outputDir,
+            String baseUrl
     ) {
     }
 }
