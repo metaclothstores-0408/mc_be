@@ -54,10 +54,16 @@ public class DtfCollectionService {
             designName = formatAutoDesignName(filename, nextVersion);
         }
 
+        String group = req.collectionGroup();
+        if (group == null || group.isBlank()) {
+            group = "General";
+        }
+
         DtfDesignCollection entity = DtfDesignCollection.builder()
                 .user(user)
                 .sessionId(req.sessionId())
                 .designName(designName)
+                .collectionGroup(group)
                 .originalFilename(filename)
                 .versionNumber(nextVersion)
                 .imageDataUrl(req.imageDataUrl())
@@ -85,6 +91,9 @@ public class DtfCollectionService {
 
         if (req.designName() != null && !req.designName().isBlank()) {
             entity.setDesignName(req.designName());
+        }
+        if (req.collectionGroup() != null && !req.collectionGroup().isBlank()) {
+            entity.setCollectionGroup(req.collectionGroup());
         }
         if (req.selectedSheetPreset() != null) entity.setSelectedSheetPreset(req.selectedSheetPreset());
         if (req.printScale() != null) entity.setPrintScale(req.printScale());
@@ -135,6 +144,7 @@ public class DtfCollectionService {
                 d.getUser() != null ? d.getUser().getId() : null,
                 d.getSessionId(),
                 d.getDesignName(),
+                d.getCollectionGroup() != null ? d.getCollectionGroup() : "General",
                 d.getOriginalFilename(),
                 d.getVersionNumber(),
                 d.getImageDataUrl(),
@@ -152,3 +162,4 @@ public class DtfCollectionService {
         );
     }
 }
+

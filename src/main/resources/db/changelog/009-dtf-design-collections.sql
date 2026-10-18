@@ -24,3 +24,4 @@ CREATE TABLE dtf_design_collections (
 CREATE INDEX idx_dtf_col_user ON dtf_design_collections(user_id);
 CREATE INDEX idx_dtf_col_session ON dtf_design_collections(session_id);
 CREATE INDEX idx_dtf_col_updated ON dtf_design_collections(updated_at DESC);
+

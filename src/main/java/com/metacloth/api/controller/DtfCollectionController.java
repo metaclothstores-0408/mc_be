@@ -42,6 +42,7 @@ public class DtfCollectionController {
         SaveDtfCollectionRequest preparedReq = new SaveDtfCollectionRequest(
                 finalSessionId,
                 req.designName(),
+                req.collectionGroup(),
                 req.originalFilename(),
                 req.imageDataUrl(),
                 req.previewDataUrl(),
@@ -91,3 +92,4 @@ public class DtfCollectionController {
         return null;
     }
 }
+

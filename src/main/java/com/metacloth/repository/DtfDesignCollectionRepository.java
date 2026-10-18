@@ -19,3 +19,4 @@ public interface DtfDesignCollectionRepository extends JpaRepository<DtfDesignCo
     @Query("SELECT COALESCE(MAX(d.versionNumber), 0) FROM DtfDesignCollection d WHERE d.originalFilename = :filename AND ((:userId IS NOT NULL AND d.user.id = :userId) OR (:userId IS NULL AND d.sessionId = :sessionId))")
     int findLatestVersionNumber(@Param("filename") String filename, @Param("userId") Long userId, @Param("sessionId") String sessionId);
 }
+

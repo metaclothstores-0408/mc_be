@@ -25,6 +25,10 @@ public class DtfDesignCollection {
     @Column(name = "design_name", nullable = false)
     String designName;
 
+    @Column(name = "collection_group", length = 100)
+    @Builder.Default
+    String collectionGroup = "General";
+
     @Column(name = "original_filename", nullable = false)
     String originalFilename;
 
@@ -82,3 +86,4 @@ public class DtfDesignCollection {
         updatedAt = OffsetDateTime.now();
     }
 }
+

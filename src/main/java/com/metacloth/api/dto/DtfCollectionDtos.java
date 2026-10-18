@@ -10,6 +10,7 @@ public final class DtfCollectionDtos {
     public record SaveDtfCollectionRequest(
             String sessionId,
             String designName,
+            String collectionGroup,
             @NotBlank String originalFilename,
             @NotBlank String imageDataUrl,
             String previewDataUrl,
@@ -25,6 +26,7 @@ public final class DtfCollectionDtos {
 
     public record UpdateDtfCollectionRequest(
             String designName,
+            String collectionGroup,
             String selectedSheetPreset,
             Double printScale,
             String stripColorHex,
@@ -41,6 +43,7 @@ public final class DtfCollectionDtos {
             Long userId,
             String sessionId,
             String designName,
+            String collectionGroup,
             String originalFilename,
             Integer versionNumber,
             String imageDataUrl,

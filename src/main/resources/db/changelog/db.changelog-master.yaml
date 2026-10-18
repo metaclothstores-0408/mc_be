@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/008-fix-text-columns.sql
   - include:
       file: db/changelog/009-dtf-design-collections.sql
+  - include:
+      file: db/changelog/010-collection-group.sql
