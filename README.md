@@ -1,4 +1,4 @@
-# MetaCloth Backend — Phase 1
+# SHADE 01 Backend — Heavyweight Streetwear Atelier API
 
 Spring Boot 3.x + Java 17 + PostgreSQL 15 + JPA/Hibernate + Liquibase + Spring Security + JWT.
 
