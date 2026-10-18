@@ -37,10 +37,12 @@ public class SecurityConfig {
                                 "/actuator/health"
                         ).permitAll()
                         .requestMatchers("/actuator/health", "/error", "/api/v1/auth/**").permitAll()
-                        .requestMatchers("/actuator/health", "/error", "/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/avatars/**", "/api/v1/products/**", "/api/v1/dtf/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/dtf/download").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN").requestMatchers("/api/v1/**").hasRole("CUSTOMER").anyRequest().authenticated())
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/orders/**").hasAnyRole("CUSTOMER", "ADMIN")
+                        .requestMatchers("/api/v1/**").hasRole("CUSTOMER")
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwt, UsernamePasswordAuthenticationFilter.class);
         return h.build();
     }

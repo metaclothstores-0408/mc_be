@@ -20,7 +20,7 @@ public class DtfProductionAsset {
     @JoinColumn(name = "order_item_id", nullable = false)
     OrderItem orderItem;
 
-    @Column(name = "original_asset_url", length = 1000)
+    @Column(name = "original_asset_url", columnDefinition = "text")
     String originalAssetUrl;
 
     /** Absolute path on server / object-storage key for print-ready PNG */

@@ -30,6 +30,6 @@ public class OrderItem {
     BigDecimal unitPrice;
     @Column(name = "print_config_json", columnDefinition = "jsonb")
     String printConfigJson;
-    @Column(name = "preview_render_url")
+    @Column(name = "preview_render_url", columnDefinition = "text")
     String previewRenderUrl;
 }

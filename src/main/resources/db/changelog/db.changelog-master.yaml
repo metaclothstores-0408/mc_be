@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/006-dtf-print-scale.sql
   - include:
       file: db/changelog/007-dtf-sheet-sizing.sql
+  - include:
+      file: db/changelog/008-fix-text-columns.sql

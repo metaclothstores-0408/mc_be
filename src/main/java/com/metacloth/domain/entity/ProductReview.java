@@ -40,6 +40,7 @@ public class ProductReview {
     @Column(columnDefinition = "TEXT")
     private String comment;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 

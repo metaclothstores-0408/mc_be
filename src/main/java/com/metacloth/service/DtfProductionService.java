@@ -15,6 +15,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -280,7 +282,20 @@ public class DtfProductionService {
             byte[] bytes=Base64.getDecoder().decode(b64.replaceAll("\\s+",""));
             try(ByteArrayInputStream bis=new ByteArrayInputStream(bytes)){return ImageIO.read(bis);}
         }
-        URL u=new URL(url);
+        URI uri = URI.create(url);
+        String scheme = uri.getScheme();
+        if (scheme == null || (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https"))) {
+            throw new IllegalArgumentException("Invalid URL scheme: " + scheme);
+        }
+        String host = uri.getHost();
+        if (host == null || host.isBlank()) {
+            throw new IllegalArgumentException("Invalid URL host");
+        }
+        InetAddress address = InetAddress.getByName(host);
+        if (address.isLoopbackAddress() || address.isSiteLocalAddress() || address.isLinkLocalAddress() || address.isAnyLocalAddress() || host.equalsIgnoreCase("localhost")) {
+            throw new SecurityException("Access to local/private network address is prohibited: " + host);
+        }
+        URL u = uri.toURL();
         HttpURLConnection conn=(HttpURLConnection)u.openConnection();
         conn.setConnectTimeout(8000); conn.setReadTimeout(15000);
         conn.setRequestProperty("User-Agent","MetaCloth-DTF/1.0");

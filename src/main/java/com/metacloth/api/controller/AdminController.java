@@ -82,7 +82,7 @@ public class AdminController {
             );
         }
 
-        if (repo.existsById(id)) {
+        if (repo.existsByUserId(id)) {
             throw new ApiException(
                     HttpStatus.CONFLICT,
                     "This user has orders and cannot be deleted. Delete or archive the orders first."

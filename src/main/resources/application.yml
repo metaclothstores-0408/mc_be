@@ -9,7 +9,7 @@ spring:
     hibernate.ddl-auto: validate
     properties:
       hibernate:
-        format_sql:true
+        format_sql: true
       jdbc.time_zone: UTC
   liquibase:
     enabled: true
@@ -26,7 +26,7 @@ metacloth:
     client-secret: ${GOOGLE_CLIENT_SECRET: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}
     redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8080/api/v1/auth/google/callback}
     frontend-callback-url: ${GOOGLE_OAUTH_FRONTEND_CALLBACK_URL:http://localhost:5173/oauth/google/callback}
-    scopes: ${GOOGLE_OAUTH_SCOPES:openid,email,profile,https://www.googleapis.com/auth/gmail.readonly}
+    scopes: ${GOOGLE_OAUTH_SCOPES:openid,email,profile}
     token-encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY:pxNH/CzgXPRMofVfa9RHk/80PNc+Glb2T+dYb1moGj0=}
   otp.length: ${OTP_LENGTH:6}
   otp.expiry-minutes: ${OTP_EXPIRY_MINUTES:5}

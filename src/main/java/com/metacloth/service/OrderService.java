@@ -40,7 +40,9 @@ public class OrderService {
             ProductVariant v = variants.findByIdForUpdate(i.productVariantId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Variant not found"));
             if (v.getStockQuantity() < i.quantity()) throw new ApiException(HttpStatus.CONFLICT, "Insufficient stock");
             BigDecimal expected = v.getProduct().getBasePrice();
-            if (v.getProduct().isCustomizable() && i.avatarId() != null)
+            boolean hasCustomDesign = (i.avatarId() != null)
+                    || (i.printConfigJson() != null && !i.printConfigJson().isBlank() && !i.printConfigJson().trim().equals("{}"));
+            if (v.getProduct().isCustomizable() && hasCustomDesign)
                 expected = expected.add(v.getProduct().getPrintSurcharge());
             if (i.unitPrice().compareTo(expected) != 0)
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid unit price");
