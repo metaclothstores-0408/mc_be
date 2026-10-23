@@ -1,5 +1,7 @@
 .idea
 target
+tools/
+storage/
 .env
 .env.*
 !.env.example

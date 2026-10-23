@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/error", "/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/avatars/**", "/api/v1/products/**", "/api/v1/dtf/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/dtf/download").permitAll()
+                        .requestMatchers("/api/dtf/**", "/api/v1/dtf/**").permitAll()
                         .requestMatchers("/api/v1/dtf-collections/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/orders/**").hasAnyRole("CUSTOMER", "ADMIN")
