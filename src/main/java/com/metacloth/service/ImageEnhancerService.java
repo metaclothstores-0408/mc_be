@@ -180,3 +180,4 @@ public class ImageEnhancerService {
         return baos.toByteArray();
     }
 }
+

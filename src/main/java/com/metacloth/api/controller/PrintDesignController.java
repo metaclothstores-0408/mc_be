@@ -35,9 +35,17 @@ public class PrintDesignController {
                 return ResponseEntity.badRequest().build();
             }
 
+            // Extract original file base name without extension
+            String originalName = (file.getOriginalFilename() != null && !file.getOriginalFilename().isBlank())
+                    ? file.getOriginalFilename().replaceAll("\\.[^.]+$", "")
+                    : "artwork";
+            // Sanitize for header attachment filename
+            String cleanBaseName = originalName.replaceAll("[^a-zA-Z0-9_\\-\\.]", "_");
+            String outputFilename = cleanBaseName + "_dtf_output_300dpi.png";
+
             byte[] result = enhancerService.processDtfPrint(file, enableEnhance, removeBg, isPhoto);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"dtf_output_300dpi.png\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + outputFilename + "\"")
                     .header(HttpHeaders.CACHE_CONTROL, "no-store")
                     .body(result);
         } catch (Exception e) {
