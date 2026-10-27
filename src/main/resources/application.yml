@@ -1,4 +1,4 @@
-spring:
+﻿spring:
   application.name: metacloth-backend
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/metacloth}
@@ -34,3 +34,9 @@ metacloth:
   otp.max-attempts: ${OTP_MAX_ATTEMPTS:5}
   dtf.output-dir: ${DTF_OUTPUT_DIR:./storage/dtf}
   dtf.base-url: ${DTF_BASE_URL:}
+  r2:
+    endpoint: ${R2_ENDPOINT:https://33bbf9ac240c347e9a1296d26a2a6b4d.r2.cloudflarestorage.com}
+    access-key-id: ${R2_ACCESS_KEY_ID:}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY:}
+    bucket-name: ${R2_BUCKET_NAME:shade-atelier-production}
+    public-base-url: ${R2_PUBLIC_BASE_URL:}

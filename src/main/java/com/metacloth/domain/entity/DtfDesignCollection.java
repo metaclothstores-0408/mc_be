@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.OffsetDateTime;
 
 /**
- * Stores customer / guest saved DTF design collections and versions.
+ * Stores customer saved DTF design collections and versions backed by Cloudflare R2.
  */
 @Entity
 @Table(name = "dtf_design_collections")
@@ -36,11 +36,32 @@ public class DtfDesignCollection {
     @Builder.Default
     Integer versionNumber = 1;
 
-    @Column(name = "image_data_url", columnDefinition = "text", nullable = false)
+    /** Legacy base64 / fallback; nullable now that R2 object storage is active */
+    @Column(name = "image_data_url", columnDefinition = "text")
     String imageDataUrl;
 
+    /** Legacy preview data url; nullable */
     @Column(name = "preview_data_url", columnDefinition = "text")
     String previewDataUrl;
+
+    @Column(name = "r2_object_key", length = 500)
+    String r2ObjectKey;
+
+    @Column(name = "r2_image_url", length = 1000)
+    String r2ImageUrl;
+
+    @Column(name = "r2_preview_key", length = 500)
+    String r2PreviewKey;
+
+    @Column(name = "r2_preview_url", length = 1000)
+    String r2PreviewUrl;
+
+    @Column(name = "file_size_bytes")
+    @Builder.Default
+    Long fileSizeBytes = 0L;
+
+    @Column(name = "expires_at")
+    OffsetDateTime expiresAt;
 
     @Column(name = "selected_sheet_preset", length = 10)
     @Builder.Default
@@ -80,10 +101,14 @@ public class DtfDesignCollection {
         if (versionNumber == null) versionNumber = 1;
         if (selectedSheetPreset == null) selectedSheetPreset = "A3";
         if (printScale == null) printScale = 1.0;
+        if (fileSizeBytes == null) fileSizeBytes = 0L;
+        if (expiresAt == null) {
+            // Default retention: 14 days for saved collections
+            expiresAt = OffsetDateTime.now().plusDays(14);
+        }
     }
 
     @PreUpdate void preUpdate() {
         updatedAt = OffsetDateTime.now();
     }
 }
-

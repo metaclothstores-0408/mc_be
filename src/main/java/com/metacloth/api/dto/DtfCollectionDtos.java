@@ -48,6 +48,10 @@ public final class DtfCollectionDtos {
             Integer versionNumber,
             String imageDataUrl,
             String previewDataUrl,
+            String r2ImageUrl,
+            String r2PreviewUrl,
+            Long fileSizeBytes,
+            OffsetDateTime expiresAt,
             String selectedSheetPreset,
             Double printScale,
             String stripColorHex,
@@ -58,5 +62,13 @@ public final class DtfCollectionDtos {
             String fabricColorHex,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt
+    ) {}
+
+    public record StorageQuotaResponse(
+            long usedBytes,
+            long quotaBytes,
+            double usedMb,
+            double quotaMb,
+            double percentageUsed
     ) {}
 }

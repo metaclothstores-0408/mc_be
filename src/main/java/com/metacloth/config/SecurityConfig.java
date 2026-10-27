@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/avatars/**", "/api/v1/products/**", "/api/v1/dtf/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/dtf/download").permitAll()
                         .requestMatchers("/api/dtf/**", "/api/v1/dtf/**").permitAll()
-                        .requestMatchers("/api/v1/dtf-collections/**").permitAll()
+                        .requestMatchers("/api/v1/dtf-collections/**", "/api/v1/storage/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/orders/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .requestMatchers("/api/v1/**").hasRole("CUSTOMER")

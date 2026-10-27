@@ -1,4 +1,4 @@
-databaseChangeLog:
+﻿databaseChangeLog:
   - include:
       file: db/changelog/001-initial-schema.sql
   - include:
@@ -19,3 +19,5 @@ databaseChangeLog:
       file: db/changelog/009-dtf-design-collections.sql
   - include:
       file: db/changelog/010-collection-group.sql
+  - include:
+      file: db/changelog/011-r2-storage-migration.sql

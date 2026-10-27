@@ -12,12 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * Isolated DTF on-demand high-resolution download engine.
- * Does NOT touch Order, Cart or Studio core flow.
- * <p>
- * POST /api/v1/dtf/download
- * Body: { original_asset_url, dtf_print_parameters: {selected_sheet_preset, print_width_inches, strip_color_hex, strip_sensitivity, halftone_density, ...} }
- * Processing (Graphics2D bicubic): chroma-key removal + Bayer 4×4 halftone at exactly print_width_inches × 300 DPI.
- * Response: PNG bytes with Content-Disposition: attachment; filename="print_ready_dtf.png"
  */
 @Slf4j
 @RestController
@@ -39,9 +33,11 @@ public class DtfDownloadController {
         }
         try {
             byte[] png = dtfService.renderForDownload(req);
+            String filename = resolveDownloadFilename(req);
+
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"print_ready_dtf.png\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                     .header(HttpHeaders.CACHE_CONTROL, "no-store")
                     .contentLength(png.length)
                     .body(png);
@@ -58,7 +54,27 @@ public class DtfDownloadController {
         }
     }
 
-    // Health probe — isolated, no auth required via SecurityConfig permit
+    private String resolveDownloadFilename(DtfDownloadRequest req) {
+        String name = null;
+        if (req != null) {
+            if (req.original_filename() != null && !req.original_filename().isBlank()) {
+                name = req.original_filename();
+            } else if (req.dtf_print_parameters() != null && req.dtf_print_parameters().original_filename() != null
+                    && !req.dtf_print_parameters().original_filename().isBlank()) {
+                name = req.dtf_print_parameters().original_filename();
+            }
+        }
+        if (name == null || name.isBlank()) {
+            return "dtf_print_ready_300dpi.png";
+        }
+        int dot = name.lastIndexOf('.');
+        if (dot > 0) {
+            name = name.substring(0, dot);
+        }
+        name = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+        return name + "_dtf_300dpi.png";
+    }
+
     @GetMapping("/health")
     public java.util.Map<String,String> health(){
         return java.util.Map.of("status","ok","service","dtf-download");

@@ -8,7 +8,8 @@ public record AppProperties(
         Cors cors,
         Otp otp,
         Google google,
-        Dtf dtf
+        Dtf dtf,
+        R2 r2
 ) {
 
     public record Security(Jwt jwt) {
@@ -40,6 +41,15 @@ public record AppProperties(
     public record Dtf(
             String outputDir,
             String baseUrl
+    ) {
+    }
+
+    public record R2(
+            String endpoint,
+            String accessKeyId,
+            String secretAccessKey,
+            String bucketName,
+            String publicBaseUrl
     ) {
     }
 }
