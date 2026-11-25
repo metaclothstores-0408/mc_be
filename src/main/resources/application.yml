@@ -1,5 +1,10 @@
 spring:
   application.name: metacloth-backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/metacloth}
     username: ${DB_USERNAME:postgres}
