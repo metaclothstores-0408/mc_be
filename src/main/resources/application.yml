@@ -44,3 +44,5 @@ metacloth:
     key-id: ${RAZORPAY_KEY_ID:rzp_test_U4S578cquj6qKR}
     key-secret: ${RAZORPAY_KEY_SECRET:CBJCMLx0MkbF7cm88LykLztM}
     webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:mc_wh_sec_2026_dev_tirupur}
+  admin:
+    emails: ${ADMIN_EMAILS:admin@metacloth.local}

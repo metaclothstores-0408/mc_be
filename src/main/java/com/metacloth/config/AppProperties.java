@@ -10,7 +10,8 @@ public record AppProperties(
         Google google,
         Dtf dtf,
         R2 r2,
-        Razorpay razorpay
+        Razorpay razorpay,
+        Admin admin
 ) {
 
     public record Security(Jwt jwt) {
@@ -58,6 +59,11 @@ public record AppProperties(
             String keyId,
             String keySecret,
             String webhookSecret
+    ) {
+    }
+
+    public record Admin(
+            String emails
     ) {
     }
 }

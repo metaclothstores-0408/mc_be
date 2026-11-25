@@ -38,12 +38,12 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/actuator/health", "/error", "/api/v1/auth/**", "/api/v1/payments/webhook").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/avatars/**", "/api/v1/products/**", "/api/v1/dtf/health").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/dtf/download").permitAll()
-                        .requestMatchers("/api/dtf/**", "/api/v1/dtf/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/dtf/download").hasRole("ADMIN")
+                        .requestMatchers("/api/dtf/**", "/api/v1/dtf/health").permitAll()
                         .requestMatchers("/api/v1/dtf-collections/**", "/api/v1/storage/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/orders/**", "/api/v1/payments/**").hasAnyRole("CUSTOMER", "ADMIN")
-                        .requestMatchers("/api/v1/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/v1/**").hasAnyRole("CUSTOMER", "ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwt, UsernamePasswordAuthenticationFilter.class);
         return h.build();
