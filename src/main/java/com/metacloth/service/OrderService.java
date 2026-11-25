@@ -33,8 +33,25 @@ public class OrderService {
 
     @Transactional
     public OrderResponse create(Long uid, CreateOrderRequest r) {
+        return createWithPayment(uid, r, null, null);
+    }
+
+    @Transactional
+    public OrderResponse createWithPayment(Long uid, CreateOrderRequest r, String razorpayOrderId, String razorpayPaymentId) {
         User u = users.customer(uid);
-        Order o = Order.builder().orderNumber("MC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase()).user(u).shippingName(r.shippingName()).shippingPhone(r.shippingPhone()).shippingAddressLine(r.shippingAddressLine()).city(r.city()).postalCode(r.postalCode()).orderStatus(OrderStatus.PLACED).totalAmount(BigDecimal.ZERO).build();
+        Order o = Order.builder()
+                .orderNumber("MC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .user(u)
+                .shippingName(r.shippingName())
+                .shippingPhone(r.shippingPhone())
+                .shippingAddressLine(r.shippingAddressLine())
+                .city(r.city())
+                .postalCode(r.postalCode())
+                .orderStatus(OrderStatus.PLACED)
+                .razorpayOrderId(razorpayOrderId)
+                .razorpayPaymentId(razorpayPaymentId)
+                .totalAmount(BigDecimal.ZERO)
+                .build();
         BigDecimal total = BigDecimal.ZERO;
         for (ItemRequest i : r.items()) {
             ProductVariant v = variants.findByIdForUpdate(i.productVariantId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Variant not found"));
@@ -60,6 +77,21 @@ public class OrderService {
             log.warn("DTF trigger failed for order {}: {}", saved.getId(), e.getMessage());
         }
         return dto(saved);
+    }
+
+    public BigDecimal calculateVerifiedTotal(CreateOrderRequest r) {
+        BigDecimal total = BigDecimal.ZERO;
+        for (ItemRequest i : r.items()) {
+            ProductVariant v = variants.findById(i.productVariantId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Variant not found"));
+            if (v.getStockQuantity() < i.quantity()) throw new ApiException(HttpStatus.CONFLICT, "Insufficient stock");
+            BigDecimal expected = v.getProduct().getBasePrice();
+            boolean hasCustomDesign = (i.avatarId() != null)
+                    || (i.printConfigJson() != null && !i.printConfigJson().isBlank() && !i.printConfigJson().trim().equals("{}"));
+            if (v.getProduct().isCustomizable() && hasCustomDesign)
+                expected = expected.add(v.getProduct().getPrintSurcharge());
+            total = total.add(expected.multiply(BigDecimal.valueOf(i.quantity())));
+        }
+        return total;
     }
 
     public com.metacloth.api.dto.OrderDtos.TrackResponse track(Long uid, Long id) {

@@ -18,7 +18,7 @@ public class R2StorageServiceTest {
         if (bucket == null || bucket.isBlank()) bucket = "shade-atelier-production";
 
         AppProperties.R2 r2 = new AppProperties.R2(endpoint, accessKey != null ? accessKey : "", secretKey != null ? secretKey : "", bucket, "");
-        AppProperties props = new AppProperties(null, null, null, null, null, r2);
+        AppProperties props = new AppProperties(null, null, null, null, null, r2, null);
         R2StorageService service = new R2StorageService(props);
         service.init();
 

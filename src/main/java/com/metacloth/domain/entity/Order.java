@@ -42,6 +42,10 @@ public class Order {
     String city;
     @Column(name = "postal_code")
     String postalCode;
+    @Column(name = "razorpay_order_id")
+    String razorpayOrderId;
+    @Column(name = "razorpay_payment_id")
+    String razorpayPaymentId;
     @Column(name = "created_at")
     OffsetDateTime createdAt;
     @Column(name = "updated_at")

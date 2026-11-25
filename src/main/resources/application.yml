@@ -1,4 +1,4 @@
-﻿spring:
+spring:
   application.name: metacloth-backend
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/metacloth}
@@ -40,3 +40,7 @@ metacloth:
     secret-access-key: ${R2_SECRET_ACCESS_KEY:}
     bucket-name: ${R2_BUCKET_NAME:shade-atelier-production}
     public-base-url: ${R2_PUBLIC_BASE_URL:}
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:rzp_test_U4S578cquj6qKR}
+    key-secret: ${RAZORPAY_KEY_SECRET:CBJCMLx0MkbF7cm88LykLztM}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:mc_wh_sec_2026_dev_tirupur}

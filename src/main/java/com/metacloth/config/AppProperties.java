@@ -9,7 +9,8 @@ public record AppProperties(
         Otp otp,
         Google google,
         Dtf dtf,
-        R2 r2
+        R2 r2,
+        Razorpay razorpay
 ) {
 
     public record Security(Jwt jwt) {
@@ -50,6 +51,13 @@ public record AppProperties(
             String secretAccessKey,
             String bucketName,
             String publicBaseUrl
+    ) {
+    }
+
+    public record Razorpay(
+            String keyId,
+            String keySecret,
+            String webhookSecret
     ) {
     }
 }
