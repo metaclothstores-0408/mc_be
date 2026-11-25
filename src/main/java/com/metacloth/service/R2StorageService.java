@@ -164,7 +164,16 @@ public class R2StorageService {
      */
     public String uploadBytes(String objectKey, byte[] bytes, String contentType) {
         if (!isConfigured) {
-            throw new IllegalStateException("Cloudflare R2 storage client is not configured. Verify R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY in .env");
+            log.warn("Cloudflare R2 storage client is not configured; storing locally in ./storage/{} for development fallback", objectKey);
+            try {
+                Path localPath = Path.of("storage", objectKey);
+                Files.createDirectories(localPath.getParent());
+                Files.write(localPath, bytes);
+                return "/api/v1/storage/file?key=" + objectKey;
+            } catch (Exception ex) {
+                log.error("Failed to write to local storage: {}", ex.getMessage());
+                throw new RuntimeException("Failed to store image: " + ex.getMessage(), ex);
+            }
         }
 
         try {
