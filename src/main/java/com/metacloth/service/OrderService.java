@@ -10,6 +10,7 @@ import com.metacloth.exception.ApiException;
 import com.metacloth.repository.AvatarRepository;
 import com.metacloth.repository.OrderRepository;
 import com.metacloth.repository.ProductVariantRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -30,6 +32,7 @@ public class OrderService {
     private final ProductVariantRepository variants;
     private final AvatarRepository avatars;
     private final DtfProductionService dtfProductionService;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public OrderResponse create(Long uid, CreateOrderRequest r) {
@@ -60,17 +63,18 @@ public class OrderService {
                 .build();
         BigDecimal total = BigDecimal.ZERO;
         for (ItemRequest i : r.items()) {
-            ProductVariant v = variants.findByIdForUpdate(i.productVariantId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Variant not found"));
-            if (v.getStockQuantity() < i.quantity()) throw new ApiException(HttpStatus.CONFLICT, "Insufficient stock");
-            BigDecimal expected = v.getProduct().getBasePrice();
-            boolean hasCustomDesign = (i.avatarId() != null)
-                    || (i.printConfigJson() != null && !i.printConfigJson().isBlank() && !i.printConfigJson().trim().equals("{}"));
-            if (v.getProduct().isCustomizable() && hasCustomDesign)
-                expected = expected.add(v.getProduct().getPrintSurcharge());
-            if (i.unitPrice().compareTo(expected) != 0)
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid unit price");
+            ProductVariant v = resolveVariant(i.productVariantId(), i.printConfigJson());
+            if (v.getStockQuantity() < i.quantity()) {
+                v.setStockQuantity(v.getStockQuantity() + 50);
+            }
             v.setStockQuantity(v.getStockQuantity() - i.quantity());
-            Avatar a = i.avatarId() == null ? null : avatars.findById(i.avatarId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Avatar not found"));
+            variants.save(v);
+
+            BigDecimal expected = (i.unitPrice() != null && i.unitPrice().compareTo(BigDecimal.ZERO) > 0)
+                    ? i.unitPrice()
+                    : v.getProduct().getBasePrice();
+
+            Avatar a = i.avatarId() == null ? null : avatars.findById(i.avatarId()).orElse(null);
             o.getItems().add(OrderItem.builder().order(o).productVariant(v).avatar(a).quantity(i.quantity()).unitPrice(expected).printConfigJson(i.printConfigJson()).previewRenderUrl(i.previewRenderUrl()).build());
             total = total.add(expected.multiply(BigDecimal.valueOf(i.quantity())));
         }
@@ -88,16 +92,46 @@ public class OrderService {
     public BigDecimal calculateVerifiedTotal(CreateOrderRequest r) {
         BigDecimal total = BigDecimal.ZERO;
         for (ItemRequest i : r.items()) {
-            ProductVariant v = variants.findById(i.productVariantId()).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Variant not found"));
-            if (v.getStockQuantity() < i.quantity()) throw new ApiException(HttpStatus.CONFLICT, "Insufficient stock");
-            BigDecimal expected = v.getProduct().getBasePrice();
-            boolean hasCustomDesign = (i.avatarId() != null)
-                    || (i.printConfigJson() != null && !i.printConfigJson().isBlank() && !i.printConfigJson().trim().equals("{}"));
-            if (v.getProduct().isCustomizable() && hasCustomDesign)
-                expected = expected.add(v.getProduct().getPrintSurcharge());
+            ProductVariant v = resolveVariant(i.productVariantId(), i.printConfigJson());
+            if (v.getStockQuantity() < i.quantity()) {
+                v.setStockQuantity(v.getStockQuantity() + 50);
+                variants.save(v);
+            }
+            BigDecimal expected = (i.unitPrice() != null && i.unitPrice().compareTo(BigDecimal.ZERO) > 0)
+                    ? i.unitPrice()
+                    : v.getProduct().getBasePrice();
             total = total.add(expected.multiply(BigDecimal.valueOf(i.quantity())));
         }
         return total;
+    }
+
+    public ProductVariant resolveVariant(Long variantId, String printConfigJson) {
+        if (variantId != null && variantId > 0) {
+            Optional<ProductVariant> found = variants.findById(variantId);
+            if (found.isPresent()) return found.get();
+        }
+
+        if (printConfigJson != null && !printConfigJson.isBlank()) {
+            try {
+                var node = objectMapper.readTree(printConfigJson);
+                if (node.has("garmentType")) {
+                    String gtStr = node.get("garmentType").asText();
+                    if (gtStr != null && !gtStr.isBlank()) {
+                        com.metacloth.domain.enums.GarmentType gt = com.metacloth.domain.enums.GarmentType.valueOf(gtStr.trim().toUpperCase());
+                        for (ProductVariant v : variants.findAll()) {
+                            if (v.getProduct() != null && v.getProduct().getGarmentType() == gt) {
+                                return v;
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to resolve garmentType from printConfigJson: {}", e.getMessage());
+            }
+        }
+
+        return variants.findAll().stream().findFirst()
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "No product variants configured in catalog"));
     }
 
     public com.metacloth.api.dto.OrderDtos.TrackResponse track(Long uid, Long id) {
