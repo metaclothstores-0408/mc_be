@@ -92,26 +92,33 @@ public class PaymentService {
     @Transactional
     public PaymentVerificationResponse verifyPayment(Long userId, VerifyPaymentRequest request) {
         String keySecret = properties.razorpay().keySecret();
+        if (keySecret != null) {
+            keySecret = keySecret.trim().replace("\"", "").replace("'", "");
+        }
+
+        String rzpOrderId = request.razorpayOrderId() != null ? request.razorpayOrderId().trim() : "";
+        String rzpPaymentId = request.razorpayPaymentId() != null ? request.razorpayPaymentId().trim() : "";
+        String rzpSignature = request.razorpaySignature() != null ? request.razorpaySignature().trim() : "";
 
         try {
             JSONObject attrs = new JSONObject();
-            attrs.put("razorpay_order_id", request.razorpayOrderId());
-            attrs.put("razorpay_payment_id", request.razorpayPaymentId());
-            attrs.put("razorpay_signature", request.razorpaySignature());
+            attrs.put("razorpay_order_id", rzpOrderId);
+            attrs.put("razorpay_payment_id", rzpPaymentId);
+            attrs.put("razorpay_signature", rzpSignature);
 
             boolean valid = Utils.verifyPaymentSignature(attrs, keySecret);
             if (!valid) {
-                log.warn("Invalid payment signature for rzpOrderId: {}", request.razorpayOrderId());
+                log.warn("Invalid payment signature for rzpOrderId: {}", rzpOrderId);
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid payment signature");
             }
         } catch (ApiException ae) {
             throw ae;
         } catch (Exception e) {
-            log.error("Error verifying payment signature: {}", e.getMessage(), e);
+            log.error("Error verifying payment signature for order {}: {}", rzpOrderId, e.getMessage(), e);
             throw new ApiException(HttpStatus.BAD_REQUEST, "Signature verification failed: " + e.getMessage());
         }
 
-        PaymentOrder po = paymentOrders.findByRazorpayOrderId(request.razorpayOrderId())
+        PaymentOrder po = paymentOrders.findByRazorpayOrderId(rzpOrderId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Payment record not found"));
 
         if ("PAID".equals(po.getStatus()) && po.getOrder() != null) {
@@ -125,15 +132,16 @@ public class PaymentService {
             OrderResponse orderResponse = orderService.createWithPayment(
                     effectiveUserId,
                     orderReq,
-                    request.razorpayOrderId(),
-                    request.razorpayPaymentId()
+                    rzpOrderId,
+                    rzpPaymentId
             );
 
             po.setStatus("PAID");
-            po.setRazorpayPaymentId(request.razorpayPaymentId());
+            po.setRazorpayPaymentId(rzpPaymentId);
             po.setOrder(orders.getReferenceById(orderResponse.id()));
             paymentOrders.save(po);
 
+            log.info("Payment verified and order created successfully: MC-{}, RZP-Order: {}", orderResponse.orderNumber(), rzpOrderId);
             return new PaymentVerificationResponse(true, "Payment verified successfully", orderResponse);
         } catch (Exception e) {
             log.error("Failed to finalize order after payment verification: {}", e.getMessage(), e);
@@ -197,14 +205,12 @@ public class PaymentService {
                 try {
                     CreateOrderRequest orderReq = objectMapper.readValue(po.getOrderPayloadJson(), CreateOrderRequest.class);
                     Long uid = po.getUser() != null ? po.getUser().getId() : null;
-                    if (uid != null) {
-                        OrderResponse orderResponse = orderService.createWithPayment(uid, orderReq, rzpOrderId, rzpPaymentId);
-                        po.setStatus("PAID");
-                        po.setRazorpayPaymentId(rzpPaymentId);
-                        po.setOrder(orders.getReferenceById(orderResponse.id()));
-                        paymentOrders.save(po);
-                        log.info("Order fulfilled via Razorpay webhook for rzpOrderId: {}", rzpOrderId);
-                    }
+                    OrderResponse orderResponse = orderService.createWithPayment(uid, orderReq, rzpOrderId, rzpPaymentId);
+                    po.setStatus("PAID");
+                    po.setRazorpayPaymentId(rzpPaymentId);
+                    po.setOrder(orders.getReferenceById(orderResponse.id()));
+                    paymentOrders.save(po);
+                    log.info("Order fulfilled via Razorpay webhook for rzpOrderId: {}, orderNumber: {}", rzpOrderId, orderResponse.orderNumber());
                 } catch (Exception e) {
                     log.error("Failed to fulfill order via webhook for {}: {}", rzpOrderId, e.getMessage(), e);
                 }
