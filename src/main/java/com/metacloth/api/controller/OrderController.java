@@ -30,4 +30,9 @@ public class OrderController {
     Object track(Authentication a, @PathVariable Long id) {
         return service.track((Long) a.getPrincipal(), id);
     }
+
+    @GetMapping("/track/{query}")
+    public com.metacloth.api.dto.OrderDtos.TrackingDetailResponse trackPublic(@PathVariable String query) {
+        return service.trackPublic(query);
+    }
 }

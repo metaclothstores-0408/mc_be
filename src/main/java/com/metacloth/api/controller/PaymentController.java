@@ -23,7 +23,7 @@ public class PaymentController {
     public ResponseEntity<PaymentOrderInitResponse> createOrder(
             Authentication auth,
             @Valid @RequestBody CreateOrderRequest request) {
-        Long userId = (Long) auth.getPrincipal();
+        Long userId = (auth != null && auth.getPrincipal() instanceof Long) ? (Long) auth.getPrincipal() : null;
         PaymentOrderInitResponse res = paymentService.createPaymentOrder(userId, request);
         return ResponseEntity.ok(res);
     }
@@ -32,7 +32,7 @@ public class PaymentController {
     public ResponseEntity<PaymentVerificationResponse> verifyPayment(
             Authentication auth,
             @Valid @RequestBody VerifyPaymentRequest request) {
-        Long userId = (Long) auth.getPrincipal();
+        Long userId = (auth != null && auth.getPrincipal() instanceof Long) ? (Long) auth.getPrincipal() : null;
         PaymentVerificationResponse res = paymentService.verifyPayment(userId, request);
         return ResponseEntity.ok(res);
     }

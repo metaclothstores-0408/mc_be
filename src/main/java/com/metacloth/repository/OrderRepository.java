@@ -16,5 +16,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     long countByOrderStatus(OrderStatus status);
 
+    Optional<Order> findByOrderNumberIgnoreCase(String orderNumber);
+
+    Optional<Order> findFirstByShippingPhoneOrderByCreatedAtDesc(String shippingPhone);
+
     boolean existsByUserId(Long userId);
 }

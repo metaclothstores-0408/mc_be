@@ -38,4 +38,29 @@ public final class OrderDtos {
             List<String> timeline
     ) {
     }
+
+    public record TrackingDetailResponse(
+            Long id,
+            String orderNumber,
+            String status,
+            String shippingName,
+            String city,
+            String postalCode,
+            BigDecimal totalAmount,
+            String createdAt,
+            String courierPartner,
+            String trackingNumber,
+            String trackingUrl,
+            List<TimelineStep> timeline,
+            List<ItemResponse> items
+    ) {
+        public record TimelineStep(
+                String status,
+                String title,
+                String description,
+                String timestamp,
+                boolean completed,
+                boolean current
+        ) {}
+    }
 }

@@ -55,8 +55,24 @@ public class PaymentService {
 
             String payloadJson = objectMapper.writeValueAsString(request);
 
+            com.metacloth.domain.entity.User user = null;
+            if (userId != null) {
+                user = users.findById(userId).orElse(null);
+            }
+            if (user == null && request.shippingPhone() != null && !request.shippingPhone().isBlank()) {
+                String phone = request.shippingPhone().trim();
+                user = users.findByPhoneNumber(phone)
+                        .orElseGet(() -> users.save(com.metacloth.domain.entity.User.builder()
+                                .phoneNumber(phone)
+                                .fullName(request.shippingName() != null ? request.shippingName().trim() : "MetaCloth Customer")
+                                .role(com.metacloth.domain.enums.UserRole.CUSTOMER)
+                                .authProvider(com.metacloth.domain.enums.AuthProvider.PHONE)
+                                .enabled(true)
+                                .build()));
+            }
+
             PaymentOrder po = PaymentOrder.builder()
-                    .user(users.getReferenceById(userId))
+                    .user(user)
                     .razorpayOrderId(rzpOrderId)
                     .amount(total)
                     .currency("INR")
